@@ -1,0 +1,37 @@
+Answer the following questions in a file myalloc/errors.txt
+
+(a) Describe what your allocator does in each of the following error cases. What happens if a
+programmer calls myfree() on:
+	• An address that did not originate from myalloc()?
+
+		ANSWER: 
+		If myfree() is called on an address that did not originate from myalloc(), we get a segmentation fault because that address doesn't exist in memory, so we don't have access to data at that memory address. Because we can't access that address in memory, but we're still trying to allocate space in the memory, we get a segmentation fault.
+
+
+	• An address that is contained within a memory block returned by myalloc()?
+	For example: a = myalloc(10); myfree(a + 5);
+
+		ANSWER:
+		If myfree() is called on an address that is contained within a memory block returned by myalloc(), we will override our own data. If we call myfree() on a memory block in myalloc(), we're passing in the wrong address in memory because we're not pointing to a header that indicates a space in memory. Instead, we are passing in content stored in memory, not the header. The code will try allocate memory that isn't free, which will cause it to overrride memory, corrupting our data.
+
+
+		• An address that has already been freed?
+		For example: a = myalloc(10); myfree(a); myfree(a);
+
+		ANSWER:
+		If myfree() is called on an address that has already been freed, the error checking in the code will handle this. 
+			if ((unsigned char*)helperptr + headersize + size >= mem + MEMORY_SIZE) 
+			{return (unsigned char *) 0}
+		Thus, error checking handles this problem already and prints out an error message. 
+
+
+(b) Describe how to implement an allocator that would be more robust to the kinds of abuses
+suggested in the previous question. By “more robust,” we mean that the program should flag 
+the invalid use and then terminate, identifying the offending myfree() call.
+
+		ANSWER:
+		To implement a more robust allocator that will flag the invalide use and terminate the offending myfree() call, we first will implement a check to make sure that myfree() is n ot called on an address that doesn't originate from myalloc(). We want to initially check if the memory address is within the range from mem to mem + Memory size. If the memory address is between the start and end of the memory, then we can continue with myalloc() and if not, we will flag the error, return an error, and exit the function.
+
+		Next, we will have to run a check to make sure that myfree() is not calling on an address that is contained within a memory block returned by myalloc(). We will make sure that our address is pointing to one of our address headers by looping through the memory from the beginning, checking every header, and making sure that the address passed to myfree() refers to a valid header. If not, we can raise a flag, return an error, and exit the function.
+		
+		We already have a error check to prevent calling myfree() on an address that has already been freed. Thus, by implementing these checks, we can design a more robust allocator.
